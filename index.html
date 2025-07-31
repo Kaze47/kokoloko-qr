@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Koko Loko Trap Party - Validare Bilete</title>
+<style>
+  body {
+    background-color: #121212;
+    color: #eee;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  h1 {
+    margin-bottom: 5px;
+    color: #ff4081;
+  }
+  #price {
+    margin-bottom: 30px;
+    font-size: 1.2em;
+    color: #bbb;
+  }
+  #result {
+    margin-top: 20px;
+    font-size: 1.5em;
+    min-height: 2em;
+  }
+  button {
+    background-color: #ff4081;
+    border: none;
+    color: white;
+    padding: 12px 20px;
+    font-size: 1.2em;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  #video {
+    margin-top: 20px;
+    border-radius: 10px;
+    width: 320px;
+    max-width: 90vw;
+    height: 240px;
+    background: black;
+  }
+</style>
+</head>
+<body>
+<h1>Koko Loko Trap Party</h1>
+<div id="price">Preț bilet: 50 lei</div>
+
+<button id="startScan">Start Scan</button>
+<video id="video" hidden></video>
+<div id="result"></div>
+
+<script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
+<script>
+  const bileteValide = new Set([
+    "BILET 001","BILET 002","BILET 003","BILET 004","BILET 005","BILET 006","BILET 007","BILET 008","BILET 009","BILET 010",
+    "BILET 011","BILET 012","BILET 013","BILET 014","BILET 015","BILET 016","BILET 017","BILET 018","BILET 019","BILET 020",
+    "BILET 021","BILET 022","BILET 023","BILET 024","BILET 025","BILET 026","BILET 027","BILET 028","BILET 029","BILET 030",
+    "BILET 031","BILET 032","BILET 033","BILET 034","BILET 035","BILET 036","BILET 037","BILET 038","BILET 039","BILET 040",
+    "BILET 041","BILET 042","BILET 043","BILET 044","BILET 045","BILET 046","BILET 047","BILET 048","BILET 049","BILET 050",
+    "BILET 051","BILET 052","BILET 053","BILET 054","BILET 055","BILET 056","BILET 057","BILET 058","BILET 059","BILET 060",
+    "BILET 061","BILET 062","BILET 063","BILET 064","BILET 065","BILET 066","BILET 067","BILET 068","BILET 069","BILET 070",
+    "BILET 071","BILET 072","BILET 073","BILET 074","BILET 075","BILET 076","BILET 077","BILET 078","BILET 079","BILET 080",
+    "COD PROBA"
+  ]);
+  const bileteScanate = new Set();
+
+  const startScanBtn = document.getElementById("startScan");
+  const video = document.getElementById("video");
+  const resultDiv = document.getElementById("result");
+
+  let codeReader = null;
+
+  function afiseazaMesaj(text, valid) {
+    resultDiv.textContent = text;
+    if (valid) {
+      resultDiv.style.color = "#4caf50"; // verde
+    } else {
+      resultDiv.style.color = "#f44336"; // rosu
+    }
+  }
+
+  function valideazaCod(cod) {
+    cod = cod.trim().toUpperCase();
+    if (!bileteValide.has(cod)) {
+      return {valid: false, mesaj: "❌ COD INVALID"};
+    }
+    if (cod !== "COD PROBA" && bileteScanate.has(cod)) {
+      return {valid: false, mesaj: "❌ COD DEJA FOLOSIT"};
+    }
+    if (cod !== "COD PROBA") {
+      bileteScanate.add(cod);
+    }
+    return {valid: true, mesaj: `✅ ACCES PERMIS – Koko Loko Trap Party – 50 lei`};
+  }
+
+  startScanBtn.addEventListener("click", async () => {
+    resultDiv.textContent = "";
+    startScanBtn.disabled = true;
+    video.hidden = false;
+
+    if (!codeReader) {
+      codeReader = new ZXing.BrowserQRCodeReader();
+    }
+
+    try {
+      const result = await codeReader.decodeOnceFromVideoDevice(undefined, "video");
+      const {valid, mesaj} = valideazaCod(result.text);
+      afiseazaMesaj(mesaj, valid);
+    } catch (err) {
+      afiseazaMesaj("Eroare la scanare: " + err.message, false);
+    } finally {
+      video.hidden = true;
+      startScanBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
+
